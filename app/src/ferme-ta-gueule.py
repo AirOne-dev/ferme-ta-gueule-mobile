@@ -110,11 +110,12 @@ class FtgShell(cmd.Cmd):
     def do_ls(self, arg):
         """list available indices"""
         msg = "|--- index name ---|--- status ---|"
-        command_output.append(msg)
         print(msg)
         for ind in self.ftg.list():
             msg = "| {0[0]:^16} | {0[1]:^12} |".format(ind)
-            command_output.append(msg)
+            if 'indexes' not in command_output:
+                command_output['indexes'] = []
+            command_output['indexes'].append(ind[0])
             print(msg)
 
     def do_index(self, arg):

@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+import 'package:ferme_ta_gueule_mobile/class/globals.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:serious_python/serious_python.dart';
+
+import '../views/log_screen.dart';
 
 class FTG {
   CupertinoTabController tabController = CupertinoTabController(initialIndex: 0);
@@ -11,6 +15,8 @@ class FTG {
 
   bool isFetchingLogs = true;
   bool _logFetchingLoop = false;
+
+  int _errorCount = 0;
 
   StreamController<String> controller = StreamController<String>();
   late Stream<String> stream;
@@ -26,6 +32,7 @@ class FTG {
       SeriousPython.run("app/app.zip", appFileName: "ferme-ta-gueule.pyc", environmentVariables: {"webserver": "true"});
       _logFetchingLoop = true;
       _startLogFetchingLoop();
+      _updateRoutes();
     } catch (e) {
       print(e);
     }
@@ -41,11 +48,17 @@ class FTG {
   }
 
   Future<dynamic> fetch({String parametters = ''}) async {
+    // if (_errorCount >= 5) {
+    //   _errorCount = 0;
+    //   await stop();
+    //   await start();
+    // }
     try {
       var decoded = await http.get(Uri.parse("http://localhost:8000$parametters")).then((res) => jsonDecode(res.body));
       status = decoded['status'];
       return decoded;
     } catch (error) {
+      _errorCount++;
       status = {};
       return {};
     }
@@ -87,6 +100,23 @@ class FTG {
     }
   }
 
+  Future<void> _updateRoutes() async {
+    var result = {};
+    while (result.isEmpty && !result.containsKey('indexes')) {
+      result = await sendCommand('ls');
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    final routes = (result['indexes'] as List<dynamic>).map((e) => e.toString()).toList();
+    for (var route in routes) {
+      Globals.routes['/index/$route'] = (context) => LogScreen(
+            logs: Globals.ftg.logsByTabIndex[routes.indexOf(route)] ?? [],
+            title: 'FTG - Index $route',
+            ftg: Globals.ftg,
+          );
+    }
+    print(Globals.routes);
+  }
+
   List<Map<String, String>> _transformLogs(List<String> logs) {
     List<Map<String, String>> result = [];
 
@@ -104,4 +134,17 @@ class FTG {
     }
     return result;
   }
+}
+
+String replaceWithRandom(String input) {
+  Random random = Random();
+  String output = '';
+
+  for (int i = 0; i < input.length; i++) {
+    int randomCharCode = random.nextInt(26) + 97; // generates a random lowercase character
+    String randomChar = String.fromCharCode(randomCharCode);
+    output += randomChar;
+  }
+
+  return output;
 }

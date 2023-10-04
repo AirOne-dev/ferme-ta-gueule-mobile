@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'dart:ui';
+import 'dart:math';
 
+import 'package:faker/faker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:ferme_ta_gueule_mobile/class/ftg.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,27 +32,48 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "FTG is starting...",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
+    final brightness = CupertinoTheme.brightnessOf(context);
+    final isDarkMode = brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? CupertinoColors.darkBackgroundGray : CupertinoColors.white,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 1.5, // making it longer than screen height
+              child: Column(
+                children: List.generate(
+                  100,
+                  (index) {
+                    var list = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
+                    list.shuffle();
+                    return Text(
+                      '${faker.date.dateTime().toIso8601String()} ${list[0]} Server log ${faker.lorem.sentence()}',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-            SizedBox(height: 20.0),
-            SpinKitPulse(
-              color: Colors.white,
-              size: 50.0,
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Center(
+              child: Text(
+                "FTG is starting...",
+                style: TextStyle(
+                  color: isDarkMode ? CupertinoColors.white : CupertinoColors.black,
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

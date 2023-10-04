@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:ferme_ta_gueule_mobile/class/utils.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:ferme_ta_gueule_mobile/class/ftg.dart';
@@ -62,7 +63,9 @@ class _MainScreenState extends State<MainScreen> {
                   .toList()
                   .map((route) => BottomNavigationBarItem(
                         label: route.split('/')[2],
-                        icon: const Icon(CupertinoIcons.ant_circle),
+                        icon: Icon(
+                          Utils.iconFromFirstLetter(route.split('/')[2]),
+                        ),
                       ))
                   .toList()
               : [
@@ -80,12 +83,12 @@ class _MainScreenState extends State<MainScreen> {
       tabBuilder: (BuildContext context, int index) {
         return CupertinoTabView(
           builder: (BuildContext context) {
-            var ftgIndexTabs = null;
+            Widget Function(BuildContext bc)? ftgIndexTab;
             try {
-              ftgIndexTabs = widget.ftg.routes[widget.ftg.routes.keys.toList()[index]];
+              ftgIndexTab = widget.ftg.routes[widget.ftg.routes.keys.toList()[index]];
             } catch (_) {}
-            if (ftgIndexTabs != null) {
-              return ftgIndexTabs(context);
+            if (ftgIndexTab != null) {
+              return ftgIndexTab(context);
             }
             return EmptyScreen(status: widget.ftg.status);
           },

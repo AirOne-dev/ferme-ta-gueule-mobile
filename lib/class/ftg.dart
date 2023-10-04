@@ -20,7 +20,7 @@ class FTG {
   StreamController<String> controller = StreamController<String>();
   late Stream<String> stream;
 
-  var routes = {};
+  Map<String, Widget Function(BuildContext)> routes = {};
 
   FTG() {
     stream = controller.stream;
@@ -54,11 +54,11 @@ class FTG {
 
   // Send a command to the ftg instance
   Future<dynamic> sendCommand(String command) {
-    return fetch(parametters: '/command/$command').then((value) => value['command_output'] ?? {});
+    return _fetch(parametters: '/command/$command').then((value) => value['command_output'] ?? {});
   }
 
   // Fetch data from the ftg instance
-  Future<dynamic> fetch({String parametters = ''}) async {
+  Future<dynamic> _fetch({String parametters = ''}) async {
     try {
       var decoded = await http.get(Uri.parse("http://localhost:8000$parametters")).then((res) => jsonDecode(res.body));
       status = decoded['status'] ?? {};
@@ -71,9 +71,9 @@ class FTG {
   }
 
   // Fetch logs from the ftg instance and transform them to a list of log objects
-  Future<List<Map<String, String>>> getLogs() async {
+  Future<List<Map<String, String>>> _getLogs() async {
     try {
-      var response = (await fetch().then((value) => value['logs_since_last_call'] ?? []) as List<dynamic>)
+      var response = (await _fetch().then((value) => value['logs_since_last_call'] ?? []) as List<dynamic>)
           .map((e) => e.toString().trim())
           .toList();
       var elems = response.where((e) => e.isNotEmpty).toList();
@@ -94,9 +94,9 @@ class FTG {
 
   // Start a loop that fetches logs every 500ms
   Future<void> _startLogFetchingLoop() async {
-    while (_logFetchingLoop) {
+    if (_logFetchingLoop) {
       if (isFetchingLogs) {
-        var logs = await getLogs();
+        var logs = await _getLogs();
         if (logs.isNotEmpty) {
           if (logsByTabIndex[tabController.index] == null) {
             logsByTabIndex[tabController.index] = logs;
@@ -106,6 +106,7 @@ class FTG {
         }
       }
       await Future.delayed(const Duration(milliseconds: 500));
+      return _startLogFetchingLoop();
     }
   }
 
@@ -151,17 +152,4 @@ class FTG {
     }
     return result;
   }
-}
-
-String replaceWithRandom(String input) {
-  Random random = Random();
-  String output = '';
-
-  for (int i = 0; i < input.length; i++) {
-    int randomCharCode = random.nextInt(26) + 97; // generates a random lowercase character
-    String randomChar = String.fromCharCode(randomCharCode);
-    output += randomChar;
-  }
-
-  return output;
 }

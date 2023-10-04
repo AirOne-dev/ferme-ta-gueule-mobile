@@ -38,9 +38,13 @@ class _MyAppState extends State<MyApp> {
     });
 
     widget.ftg.tabController.addListener(() async {
-      final currrentRoute = Globals.routes.keys.toList()[widget.ftg.tabController.index + 1];
-      if (currrentRoute.contains('index')) {
-        final selectedFtgIndex = int.parse(currrentRoute.split('/')[2]);
+      var currrentRoute = '';
+      try {
+        currrentRoute = Globals.routes.keys.toList()[widget.ftg.tabController.index + 1];
+      } catch (_) {}
+
+      if (currrentRoute.contains('/index/')) {
+        final selectedFtgIndex = currrentRoute.split('/')[2];
 
         widget.ftg.isFetchingLogs = false;
         widget.ftg.sendCommand('index $selectedFtgIndex');
@@ -62,45 +66,34 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
-        items: Globals.routes.keys
-            .toList()
-            .map((route) => {
-                  if (route.contains('/index/'))
-                    {
-                      BottomNavigationBarItem(
-                        label: 'Index ${route.split('/')[2]}',
-                        icon: const Icon(CupertinoIcons.ant_circle),
-                      )
-                    }
-                })
-            .toList(),
-        // const [
-        //   BottomNavigationBarItem(
-        //     label: 'Logs',
-        //     icon: Icon(CupertinoIcons.ant_circle),
-        //   ),
-        //   BottomNavigationBarItem(
-        //     label: 'Gql',
-        //     icon: Icon(CupertinoIcons.graph_circle),
-        //   ),
-        //   BottomNavigationBarItem(
-        //     icon: Icon(CupertinoIcons.settings),
-        //     label: 'Settings',
-        //   ),
-        // ],
+        items: [
+          ...Globals.routes.keys
+              .toList()
+              .map((route) => route.contains('/index/')
+                  ? BottomNavigationBarItem(
+                      label: route.split('/')[2],
+                      icon: const Icon(CupertinoIcons.ant_circle),
+                    )
+                  : null)
+              .toList()
+              .nonNulls,
+          const BottomNavigationBarItem(
+            label: 'Settings',
+            icon: Icon(CupertinoIcons.settings),
+          ),
+        ],
       ),
       tabBuilder: (BuildContext context, int index) {
         return CupertinoTabView(
           builder: (BuildContext context) {
-            return Globals.routes[Globals.routes.keys.toList()[index + 1]]!(context);
-            switch (index) {
-              case 0:
-                return Globals.routes['/index/logs']!(context);
-              case 1:
-                return Globals.routes['/index/gql']!(context);
-              default:
-                return EmptyScreen(status: widget.ftg.status);
+            var ftgIndexTabs = null;
+            try {
+              ftgIndexTabs = Globals.routes[Globals.routes.keys.toList()[index + 1]];
+            } catch (_) {}
+            if (ftgIndexTabs != null) {
+              return ftgIndexTabs(context);
             }
+            return EmptyScreen(status: widget.ftg.status);
           },
         );
       },

@@ -114,7 +114,6 @@ class FTG {
             ftg: Globals.ftg,
           );
     }
-    print(Globals.routes);
   }
 
   List<Map<String, String>> _transformLogs(List<String> logs) {

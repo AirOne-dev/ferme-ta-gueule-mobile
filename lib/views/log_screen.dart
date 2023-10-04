@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:share_plus/share_plus.dart';
-import '../class/ftg.dart';
-import '../class/utils.dart';
+
+import 'package:ferme_ta_gueule_mobile/class/ftg.dart';
+import 'package:ferme_ta_gueule_mobile/class/utils.dart';
 
 class LogScreen extends StatefulWidget {
   final List<Map<String, String>> logs;
@@ -11,7 +12,7 @@ class LogScreen extends StatefulWidget {
   const LogScreen({required this.logs, required this.title, required this.ftg, Key? key}) : super(key: key);
 
   @override
-  _LogScreenState createState() => _LogScreenState();
+  State<LogScreen> createState() => _LogScreenState();
 }
 
 class _LogScreenState extends State<LogScreen> {

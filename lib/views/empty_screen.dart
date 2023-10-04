@@ -6,7 +6,7 @@ class EmptyScreen extends StatefulWidget {
   const EmptyScreen({required this.status, Key? key}) : super(key: key);
 
   @override
-  _EmptyScreenState createState() => _EmptyScreenState();
+  State<EmptyScreen> createState() => _EmptyScreenState();
 }
 
 class _EmptyScreenState extends State<EmptyScreen> {

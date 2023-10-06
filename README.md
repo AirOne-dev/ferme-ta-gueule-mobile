@@ -2,7 +2,7 @@
 
 ## TODO
 
-[] Wait for [this pr](https://github.com/gregorg/ferme-ta-gueule/pull/7) to be merged then add [gregorg/ferme-ta-gueule](https://github.com/gregorg/ferme-ta-gueule) as git submodule
+[ ] Wait for [this pr](https://github.com/gregorg/ferme-ta-gueule/pull/7) to be merged then add [gregorg/ferme-ta-gueule](https://github.com/gregorg/ferme-ta-gueule) as git submodule
 
 ## Description
 

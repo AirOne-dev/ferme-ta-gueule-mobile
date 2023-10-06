@@ -38,29 +38,47 @@ class _SplashScreenState extends State<SplashScreen> {
     final brightness = CupertinoTheme.brightnessOf(context);
     final isDarkMode = brightness == Brightness.dark;
 
+    ScrollController scrollController = ScrollController();
+
+    Text fakeLog = () {
+      var list = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
+      list.shuffle();
+      return Text(
+        '${faker.date.dateTime().toIso8601String()} ${list[0]} Server log ${faker.lorem.sentence()}',
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 12,
+        ),
+      );
+    }();
+
+    List<Text> fakeLogs = List.generate(
+      150,
+      (index) => fakeLog,
+    );
+
+    void scrollLoop() async {
+      // random delay between 100 and 750 ms
+      await Future.delayed(Duration(milliseconds: Random().nextInt(750 - 100) + 100));
+      scrollController.animateTo(
+        scrollController.offset + 10.0,
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeOut,
+      );
+      fakeLogs.add(fakeLog);
+      return scrollLoop();
+    }
+
+    scrollLoop();
+
     return Scaffold(
       backgroundColor: isDarkMode ? CupertinoColors.darkBackgroundGray : CupertinoColors.white,
       body: Stack(
         children: [
           SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 1.5, // making it longer than screen height
-              child: Column(
-                children: List.generate(
-                  100,
-                  (index) {
-                    var list = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
-                    list.shuffle();
-                    return Text(
-                      '${faker.date.dateTime().toIso8601String()} ${list[0]} Server log ${faker.lorem.sentence()}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    );
-                  },
-                ),
-              ),
+            controller: scrollController,
+            child: Column(
+              children: fakeLogs,
             ),
           ),
           BackdropFilter(

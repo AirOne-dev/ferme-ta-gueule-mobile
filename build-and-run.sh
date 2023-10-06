@@ -10,7 +10,6 @@ cd app/src
 
 # generate requirements.txt from poetry.lock
 poetry export --without-hashes --format=requirements.txt > requirements.txt
-echo "flask" >> ./requirements.txt
 cd ../..
 
 # zip app

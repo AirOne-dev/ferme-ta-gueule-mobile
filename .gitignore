@@ -42,3 +42,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ignore generated files (build-and-run.sh)
+app/src/app.zip
+app/src/requirements.txt

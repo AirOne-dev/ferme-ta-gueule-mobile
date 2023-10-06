@@ -8,8 +8,9 @@ import 'package:ferme_ta_gueule_mobile/class/ftg.dart';
 
 class SplashScreen extends StatefulWidget {
   final FTG ftg;
+  final String message;
 
-  const SplashScreen({required this.ftg, Key? key}) : super(key: key);
+  const SplashScreen({required this.ftg, this.message = 'FTG is starting...', Key? key}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -21,7 +22,9 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(const Duration(milliseconds: 1000));
       return waitForFtgToStart(); // Recursively call itself after a delay
     }
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/home', arguments: {
+      'ftg': widget.ftg,
+    });
   }
 
   @override
@@ -64,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Center(
               child: Text(
-                "FTG is starting...",
+                widget.message,
                 style: TextStyle(
                   color: isDarkMode ? CupertinoColors.white : CupertinoColors.black,
                   fontSize: 24.0,

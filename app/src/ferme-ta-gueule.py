@@ -68,9 +68,16 @@ COLORS_ATTRS = {
     "DEBUG": ("dark",),
 }
 
-unformated_msgs = []
-command_output = {}
+# Changed only if webserver is started
 webserver = None
+
+WEBSERVER_MAX_LOGS = 100
+WEBSERVER_PORT = 8000
+# Used to store unformated messages for webserver
+# unformatedMsg = "date [-] emoji [-] host [-] id [-] program [-] logmsg"
+unformated_msgs = []
+# store last command output
+command_output = {}
 
 class TimePrecisionException(Exception):
     pass
@@ -940,6 +947,10 @@ def main():
     shell_event = threading.Event()
     shell = FtgShell(ftg, shell_event)
 
+    # Start webserver that will serve the logs
+    #
+    # (use env var because serious_python.dart
+    # is not able to pass args but can pass env vars)
     if args.webserver or os.environ.get('webserver') == 'true':
         start_webserver(ftg, shell)
 
@@ -960,8 +971,15 @@ def start_webserver(ftg: Ftg, shell: FtgShell):
 
     app = Flask(__name__)
 
+    # show all the logs since last call (max 100 logs)
+    # and the status of the program
     @app.route("/")
     def ftg_output():
+        # to avoid too big responses, we only keep the last 100 logs
+        if (unformated_msgs.count > WEBSERVER_MAX_LOGS):
+            unformated_msgs = unformated_msgs[-WEBSERVER_MAX_LOGS:]
+
+        # clear the list of logs since last call and return them
         msgs = unformated_msgs.copy()
         unformated_msgs.clear()
         return json.dumps({
@@ -970,6 +988,7 @@ def start_webserver(ftg: Ftg, shell: FtgShell):
             "logs_since_last_call": msgs
         })
 
+    # run a command in the shell
     @app.route("/command/<command>")
     def ftg_run_command(command):
         if (command == 'stop' or command == 'exit' or command == 'q'):
@@ -983,9 +1002,10 @@ def start_webserver(ftg: Ftg, shell: FtgShell):
         return output
 
     def run():
-        webserver = make_server('127.0.0.1', 8000, app)
+        webserver = make_server('127.0.0.1', WEBSERVER_PORT, app)
         webserver.serve_forever()
 
+    # start the webserver in a thread so it doesn't block the main thread 
     flask_thread = threading.Thread(target=run)
     flask_thread.start()
 

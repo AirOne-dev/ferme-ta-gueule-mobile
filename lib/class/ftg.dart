@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
+import 'package:async/async.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:serious_python/serious_python.dart';
@@ -11,13 +11,13 @@ class FTG {
   CupertinoTabController tabController = CupertinoTabController(initialIndex: 1);
   Map<int, List<Map<String, String>>> logsByTabIndex = {};
   Map<String, dynamic> status = {};
-
   bool isFetchingLogs = true;
-  bool _logFetchingLoop = false;
 
+  CancelableOperation<String?>? _pythonInstance;
+  bool _logFetchingLoop = false;
   int _errorCount = 0;
 
-  StreamController<String> controller = StreamController<String>();
+  StreamController<String> controller = StreamController<String>.broadcast();
   late Stream<String> stream;
 
   Map<String, Widget Function(BuildContext)> routes = {};
@@ -31,7 +31,11 @@ class FTG {
   Future<void> start() async {
     try {
       await stop();
-      SeriousPython.run("app/app.zip", appFileName: "ferme-ta-gueule.pyc", environmentVariables: {"webserver": "true"});
+      _pythonInstance = CancelableOperation.fromFuture(SeriousPython.run(
+        "app/app.zip",
+        appFileName: "ferme-ta-gueule.pyc",
+        environmentVariables: {"webserver": "true"},
+      ));
       _logFetchingLoop = true;
       _startLogFetchingLoop();
       _updateRoutes();
@@ -43,12 +47,12 @@ class FTG {
 
   // Stop the ftg instance and reset the class variables
   Future<void> stop() async {
-    var res = sendCommand('stop');
-    _errorCount = 0;
     _logFetchingLoop = false;
-    isFetchingLogs = true;
-    status = {};
-    logsByTabIndex = {};
+    var res = await sendCommand('stop');
+    // stop the python instance if it exists
+    if (_pythonInstance != null) {
+      await _pythonInstance?.cancel();
+    }
     return res;
   }
 

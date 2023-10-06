@@ -41,6 +41,23 @@ class _MainScreenState extends State<MainScreen> {
         widget.ftg.isFetchingLogs = true;
       }
     });
+
+    ftgStatusLoop();
+  }
+
+  // This function is called recursively until the status is empty
+  void ftgStatusLoop() async {
+    if (widget.ftg.status.isNotEmpty) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return ftgStatusLoop(); // Recursively call itself after a delay
+    }
+
+    widget.ftg.stop().then((_) {
+      Navigator.pushReplacementNamed(context, '/', arguments: {
+        'ftg': FTG(),
+        'message': 'FTG is reloading...',
+      });
+    });
   }
 
   @override
@@ -90,7 +107,7 @@ class _MainScreenState extends State<MainScreen> {
             if (ftgIndexTab != null) {
               return ftgIndexTab(context);
             }
-            return EmptyScreen(status: widget.ftg.status);
+            return EmptyScreen(status: widget.ftg.status, ftg: widget.ftg);
           },
         );
       },
